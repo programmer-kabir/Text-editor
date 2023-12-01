@@ -6,7 +6,8 @@ const Editor = () => {
   const [selectedColor, setSelectedColor] = useState("#000");
   const [editableText, setEditableText] = useState("Add to text");
   const [fontSize, setFontSize] = useState(16);
-
+  const [history, setHistory] = useState([]);
+  const [redoHistory, setRedoHistory] = useState([]);
   const handleColorChange = (event) => {
     setSelectedColor(event.target.value);
   };
@@ -14,6 +15,8 @@ const Editor = () => {
   const handleTextChange = (event) => {
     const newText = event.target.value;
     setEditableText(newText);
+    setHistory([...history, newText]);
+    setRedoHistory([]);
   };
 
   const handleSizeChange = (event) => {
@@ -24,16 +27,41 @@ const Editor = () => {
     const Font = event.target.value;
     setSelectedFont(Font);
   };
+
+  const handleUndo = () => {
+    if (history.length > 0) {
+      const currentText = editableText;
+      const previousState = history.pop();
+      setEditableText(previousState);
+      setHistory([...history]);
+      setRedoHistory([...redoHistory, currentText]);
+    }
+  };
+  const handleRedo = () => {
+    if (redoHistory.length > 0) {
+      const currentText = editableText;
+      const nextState = redoHistory.pop();
+      setEditableText(nextState);
+      setRedoHistory([...redoHistory]);
+      setHistory([...history, currentText]);
+    }
+  };
   return (
     <section className="md:w-10/12 mt-10   w-11/12 mx-auto border border-gray-600 rounded">
       <div>
         {/* top section */}
         <div className="flex gap-3 p-2">
-          <button className="border border-gray-500 rounded gap-1  px-2 hover:bg-gray-200 flex items-center ">
+          <button
+            onClick={handleUndo}
+            className="border border-gray-500 rounded gap-1  px-2 hover:bg-gray-200 flex items-center "
+          >
             <FaUndo />
             Undo
           </button>
-          <button className="border border-gray-500 rounded gap-1  px-2 hover:bg-gray-200 flex items-center ">
+          <button
+            onClick={handleRedo}
+            className="border border-gray-500 rounded gap-1  px-2 hover:bg-gray-200 flex items-center "
+          >
             <FaRedoAlt />
             Redo
           </button>
@@ -50,7 +78,7 @@ const Editor = () => {
                 style={{
                   fontSize: `${fontSize}px`,
                   color: selectedColor,
-                  fontFamily: selectedFont
+                  fontFamily: selectedFont,
                 }}
                 value={editableText}
                 id=""
